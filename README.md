@@ -23,9 +23,8 @@ cd afl_cli
 chmod +x afl.R
 ```
 
-If you want to be able to run the tool from any directory by entering `afl <command>`, you'll need to add a symlink to a directory listed in `$PATH`. I recommend using `/usr/local/bin`, but you can choose any directory in `$PATH`.
+If you want to be able to run the tool from any directory by entering `afl <command>`, you'll need to add a symlink to a directory listed in `$PATH`. I recommend using `/usr/local/bin`, but you can choose any directory in `$PATH`. From the directory you cloned `afl.R` into, run the following.
 
 ```bash
-ln -s /usr/local/bin/afl afl
+ln -s afl.R /usr/local/bin/afl
 ```
-
