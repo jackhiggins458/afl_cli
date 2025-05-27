@@ -11,38 +11,38 @@ library(glue) |> shhh()
 library(memoise) |> shhh()
 library(cachem) |> shhh()
 
-# Cache setup
 # Some data (e.g. scores for the current round) are subject to change, while 
 # other data (e.g. results of the 1996 season) aren't. 
-# To minimise the number of API calls, we cache data for different lengths
-# of time, depending on how often it may be updated.
+# To minimise the number of API calls, we cache data.
 
-# Cache large, historical data sets for a year
 cd_long <- cachem::cache_disk(
   "~/.cache/afl/long_term", 
   max_size = 5e6,
-  max_age = 365 * 86400,
+  max_age = 365 * 86400, # 1 year
   evict = "lru"
 )
 
-# Cache data that may change week to week for a few days
 cd_medium <- cachem::cache_disk(
   "~/.cache/afl/medium_term", 
   max_size = 5e6,
-  max_age = 5 * 86400, # 5 days
+  max_age = 86400, # 1 day
   evict = "lru"
 )
 
-# Cache live data for a minute
 cd_short <- cachem::cache_disk(
   "~/.cache/afl/short_term", 
   max_size = 5e6,
-  max_age = 60,
+  max_age = 60, # 1 min
   evict = "lru"
 )
 
 # Helper functions
 # Memoise the fetch_squiggle_data functions
+ff_mm <- memoise::memoise(fitzRoy::fetch_fixture, cache = cd_medium)
+ff_ml <- memoise::memoise(fitzRoy::fetch_fixture, cache = cd_long)
+fl_ms <- memoise::memoise(fitzRoy::fetch_ladder, cache = cd_short)
+fl_mm <- memoise::memoise(fitzRoy::fetch_ladder, cache = cd_medium)
+fl_ml <- memoise::memoise(fitzRoy::fetch_ladder, cache = cd_long)
 fsd_ms <- memoise::memoise(fitzRoy::fetch_squiggle_data, cache = cd_short)
 fsd_mm <- memoise::memoise(fitzRoy::fetch_squiggle_data, cache = cd_medium)
 fsd_ml <- memoise::memoise(fitzRoy::fetch_squiggle_data, cache = cd_long)
@@ -61,18 +61,43 @@ fetch_current_round <- function() {
   return(current_round)
 }
 
-print_table <- function(df) {
+print_table <- function(df, format) {
   # Print kable table line by line to remove leading blank lines
   df <- knitr::kable(df, format = "simple")
+  cat(strrep(" ", 3), strrep("-", max(nchar(df))), "\n")
   for(i in 1:length(df)) {
-    glue::glue("{df[i]}") |> print()
+    glue::glue("    {df[i]}") |> print()
+    if(format == "ladder" & i == 10) {
+      cat(strrep(" ", 6), strrep("~", 87),"\n")
+    }
   }
+  cat(strrep(" ", 3), strrep("-", max(nchar(df))), "\n")
 }
 
 # Global variables
 current_year <- base::format(base::Sys.Date(), "%Y") |> as.integer()
 current_round <- fetch_current_round()
 user_agent <- "Jack's AFL CLI tool, squiggle@sent.com"
+team_name_emojis <- c(
+  "Adelaide Crows" = "💎 Adelaide Crows",
+  "Brisbane Lions" = "🦁 Brisbane Lions",
+  "Carlton" = "🎶 Carlton",
+  "Collingwood" = "🥧 Collingwood",
+  "Essendon" = "✈️  Essendon",
+  "Fremantle" = "🚢 Fremantle",
+  "Geelong Cats" = "🐱 Geelong Cats",
+  "Gold Coast Suns" = "🌞 Gold Coast Suns",
+  "GWS Giants" = "🍊 GWS Giants",
+  "Hawthorn" = "🐣 Hawthorn ",
+  "Melbourne" = "👹 Melbourne",
+  "North Melbourne" = "🦘 North Melbourne",
+  "Port Adelaide" = "🔌 Port Adelaide",
+  "Richmond" = "🐯 Richmond",
+  "St Kilda" = "👼 St Kilda",
+  "Sydney Swans" = "🦢 Sydney Swans",
+  "Western Bulldogs" = "🦴 Western Bulldogs",
+  "West Coast Eagles" = "🦅 West Coast Eagles"
+)
 
 # CLI definition ###############################################################
 
@@ -80,9 +105,10 @@ user_agent <- "Jack's AFL CLI tool, squiggle@sent.com"
 doc <- 'afl
 
 Usage:
-  afl (w|m) ladder [--season <year>] [--round <round>]
+  afl (w|m) ladder [--season <year>]
+  afl (w|m) fixture [--season <year>] [--round <round>]
   afl (w|m) results [--season <year>] [--round <round>]
-  afl (w|m) scores
+  afl (w|m) live
 
 Options:
   -h --help              Show this screen.
@@ -92,7 +118,7 @@ Options:
 
 ' |> glue::glue()
 
-arguments <- base::tryCatch(
+args <- base::tryCatch(
   expr = {
     docopt::docopt(doc, version = 'NA')
   },
@@ -109,61 +135,107 @@ arguments <- base::tryCatch(
 ) 
 
 # docopt doesn't support specifying types of arguments, so we enforce manually
-arguments$season <- as.integer(arguments$season)
-# arguments$round <- as.integer(arguments$round)
+args$season <- as.integer(args$season)
+args$round <- as.integer(args$round)
 
-if (arguments$w) {
-  arguments$w <- "AFLW"
-} else if (arguments$m) {
-  arguments$m <- "AFLM"
+if (args$w) {
+  args$comp <- "AFLW"
+} else if (args$m) {
+  args$comp <- "AFLM"
 } else {
-  stop("Competition must either be 'w' for AFLW or 'm' for AFLM")
+  stop("Must enter 'afl w' for AFLW or 'afl m' for AFLM.")
 }
 
 # Main #########################################################################
 
-if (arguments$ladder) {
-  if (arguments$season < current_year | arguments$round < current_round){
-    fetch <- fsd_ml
+if (args$ladder) {
+  if (args$season < current_year){
+    fetch <- fl_ml
   } else {
-    fetch <- fsd_ms
+    fetch <- fl_mm # TODO: Change back
   }
-  
+
   ladder <- fetch(
-    query = "standings",
-    year = arguments$season, 
-    comp = arguments$comp,
-    round = arguments$round,
+    season = args$season, 
+    comp = args$comp,
     user_agent = user_agent
     ) |> 
     quietly() |> 
     dplyr::select(
-      rank,
-      name,
-      pts,
-      played,
-      wins,
-      losses,
-      draws,
-      percentage
-      
+      position,
+      team.club.name, 
+      thisSeasonRecord.aggregatePoints,
+      thisSeasonRecord.winLossRecord.played,
+      thisSeasonRecord.winLossRecord.wins,
+      thisSeasonRecord.winLossRecord.losses,
+      thisSeasonRecord.winLossRecord.draws,
+      thisSeasonRecord.percentage,
+      form
     ) |> 
-    dplyr::mutate(percentage = round(percentage, 1)) |> 
-    print_table()
+    dplyr::rename(
+      rank = "position",
+      team = "team.club.name",
+      points = "thisSeasonRecord.aggregatePoints",
+      played = "thisSeasonRecord.winLossRecord.played",
+      wins = "thisSeasonRecord.winLossRecord.wins",
+      losses = "thisSeasonRecord.winLossRecord.losses",
+      draws = "thisSeasonRecord.winLossRecord.draws",
+      percentage = "thisSeasonRecord.percentage",
+      ) |> 
+    dplyr::mutate(
+      team = base::replace(team, team == "GWS GIANTS", "GWS Giants"),
+      team = base::replace(team, team == "Gold Coast SUNS", "Gold Coast Suns"),
+      team = team_name_emojis[team],
+      percentage = round(percentage, 1),
+      form = substr(form, nchar(form) - 4, nchar(form))  
+    )
+    cat("\n", glue::glue("🏉 {args$comp} {args$season} Ladder"), "\n\n")
+    print_table(ladder, "ladder")
 }
 
-if (arguments$results) {
-  # fitzRoy::fetch_fixture(
-  #   season = arguments$season, 
-  #   comp = arguments$comp,
-  #   round = 11)
+if (args$fixture) {
+  
+  results <- ff_ml(round = args$round) |>
+    quietly() |> 
+    dplyr::select(
+      utcStartTime,
+      home.team.club.name,
+      away.team.club.name,
+      venue.name,
+      venue.location,
+      venue.landOwner
+    ) |> 
+    dplyr::rename(
+      when = "utcStartTime",
+      home = "home.team.club.name",
+      away = "away.team.club.name",
+      ground = "venue.name",
+      where = "venue.location",
+      country = "venue.landOwner"
+    ) |> 
+    dplyr::mutate(
+      when = as.POSIXct(when, format = "%Y-%m-%dT%H:%M:%OS%z", tz = "UTC") |> 
+        format(format = "%a, %b %e at %H:%M", tz = "Australia/Melbourne"),
+      home = base::replace(home, home == "GWS GIANTS", "GWS Giants"),
+      home = base::replace(home, home == "Gold Coast SUNS", "Gold Coast Suns"),
+      home = team_name_emojis[home],
+      away = base::replace(away, away == "GWS GIANTS", "GWS Giants"),
+      away = base::replace(away, away == "Gold Coast SUNS", "Gold Coast Suns"),
+      away = team_name_emojis[away]
+    )
+
+  cat("\n", 
+      glue::glue("🏉 {args$comp} {args$season} Round {args$round} Fixture"), 
+      "\n\n")
+  print_table(results, "fixture")
 }
 
-if (arguments$scores) {
+if (args$live) {
+  # TODO: Check if AFL live scores are reliable
   scores <- fsd_ms(
     query = "games",
-    year = arguments$season, 
-    comp = arguments$comp,
+    year = args$season, 
+    comp = args$comp,
     round = current_round,
     live = 1
   ) |> quietly()
