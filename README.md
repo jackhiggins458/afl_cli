@@ -66,7 +66,7 @@ To view the ladder, use the `afl (w|m) ladder` command.
 #        5  🚢 Fremantle                32       11      8        3       0        136.0  LLWWW 
 #        6  🔌 Port Adelaide            28       11      7        4       0        118.4  WWWWW 
 #        7  🐯 Richmond                 26       11      6        4       1        131.2  WWLDL 
-#        8  ✈️  Essendon                 26       11      6        4       1        104.7  WWLDW 
+#        8  ✈️ Essendon                 26       11      6        4       1        104.7  WWLDW 
 #       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 #        9  👹 Melbourne                24       11      6        5       0         87.9  WWWLW 
 #       10  🐱 Geelong Cats             18       11      4        6       1        109.6  WLWWL 
