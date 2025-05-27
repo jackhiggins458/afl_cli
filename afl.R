@@ -10,6 +10,7 @@ library(dplyr) |> shhh()
 library(glue) |> shhh()
 library(memoise) |> shhh()
 library(cachem) |> shhh()
+library(knitr) |> shhh()
 
 # Some data (e.g. scores for the current round) are subject to change, while 
 # other data (e.g. results of the 1996 season) aren't. 
@@ -71,7 +72,7 @@ print_table <- function(df, format) {
       cat(strrep(" ", 6), strrep("~", 87),"\n")
     }
   }
-  cat(strrep(" ", 3), strrep("-", max(nchar(df))), "\n")
+  cat(strrep(" ", 3), strrep("-", max(nchar(df))), "\n\n")
 }
 
 # Global variables
@@ -102,7 +103,7 @@ team_name_emojis <- c(
 # CLI definition ###############################################################
 
 # Define CLI tool expected inputs
-doc <- 'afl
+doc <- 'A cli for viewing AFL(W/M) data
 
 Usage:
   afl (w|m) ladder [--season <year>]
@@ -125,10 +126,10 @@ args <- base::tryCatch(
   error = function(e) {
     # Hopefully the weird error message when entering invalid args gets fixed?
     # https://github.com/docopt/docopt.R/issues/49
-    #base::stop(
-    #  "Invalid argument entered. See above for valid args.", 
-    #  call. = FALSE
-    #)
+    base::stop(
+      "Invalid command Please see above for valid commands.", 
+      call. = FALSE
+    )
     # TODO: Implement debug mode, optionally, print the original error message:
     message("Original error: ", e$message)
   }
