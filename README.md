@@ -1,6 +1,6 @@
 # AFL CLI
 
-A command line interface to view standings and live scores for AFLW and AFL.
+A command line interface to view standings and live scores for [AFLW (Australian Football League Women's)](https://en.wikipedia.org/wiki/AFL_Women's) and [AFL (Australian Football League Men's)](https://en.wikipedia.org/wiki/Australian_Football_League).
 
 ![afl ladder](assets/afl.png)
 
@@ -8,7 +8,7 @@ A command line interface to view standings and live scores for AFLW and AFL.
 
 ## Installation (Linux/Mac)
 
-This tool is written in R. To run it, you'll need R installed on your machine, as well as the following packages: `dplyr`, `knitr`, `memoise`, `cachem`, `glue`, `docopt` and `fitzRoy`.
+You'll need [R](https://www.r-project.org/) installed on your machine, as well as the following packages: [`fitzRoy`](https://github.com/jimmyday12/fitzRoy), [`docopt`](https://github.com/docopt/docopt.R) , [`memoise`](https://memoise.r-lib.org/), [`cachem`](https://cachem.r-lib.org/), [`glue`](https://glue.tidyverse.org/),  [`dplyr`](https://dplyr.tidyverse.org/), [`knitr`](https://github.com/yihui/knitr).
 
 Clone this repository.
 
@@ -23,7 +23,9 @@ cd afl_cli
 chmod +x afl.R
 ```
 
-If you want to be able to run the tool from any directory by entering `afl <command>`, you'll need to add a symlink to a directory listed in `$PATH`. I recommend using `/usr/local/bin`, but you can choose any directory in `$PATH`. From the directory you cloned `afl.R` into, run the following.
+If you want to be able to run  `afl <command>` from any directory on your system, you can point a [symlink](https://en.wikipedia.org/wiki/Symbolic_link) to `afl.R` from a directory in your `$PATH`. I recommend placing the link in something like `/usr/local/bin`, but you can choose any directory in `$PATH`. 
+
+For example, from the `afl_cli` directory, run the following.
 
 ```shell
 ln -s afl.R /usr/local/bin/afl
@@ -49,7 +51,7 @@ ln -s afl.R /usr/local/bin/afl
 #  -r --round <round>     Round of season [default: current]
 ```
 
-To view the ladder, use the `afl (w|m) ladder` command.
+To view the ladder for the 2024 AFLW competition, use the `afl w ladder -s 2024` command.
 
 ```shell
 > afl w ladder -s 2024
@@ -81,7 +83,7 @@ To view the ladder, use the `afl (w|m) ladder` command.
 #    -------------------------------------------------------------------------------------------- 
 ```
 
-To view the fixture for the week's round, run `afl (w|m) fixture`.
+To view the fixture for this week's round in the AFL, run `afl m fixture`.
 
 ```shell
 > afl m fixture
@@ -101,4 +103,13 @@ To view the fixture for the week's round, run `afl (w|m) fixture`.
 #    ---------------------------------------------------------------------------------------------------------------------------- 
 ```
 
-TODO: Finish implementing the `afl (w|m) live` and `afl (w|m) results` commands.
+
+
+## To Do
+
+- [ ] Finish implementing  `afl (w|m) live` .
+- [ ] Finish implementing  `afl (w|m) results` .
+- [ ] Test `afl (w|m) live` .
+- [ ] Test `afl (w|m) results` .
+
+- [ ] Add extra output options (e.g. compact tables).
