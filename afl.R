@@ -112,8 +112,7 @@ Usage:
   afl (w|m) live
 
 Options:
-  -h --help              Show this screen.
-  -v --version           Show version.
+  -h --help              Show help.
   -s --season <year>     Season [default: {current_year}].
   -r --round <round>     Round of season [default: {current_round}].
 
@@ -231,42 +230,12 @@ if (args$fixture) {
   print_table(results, "fixture")
 }
 
-if (args$live) {
-  # TODO: Check if AFL live scores are reliable
-  scores <- fsd_ms(
-    query = "games",
-    year = args$season, 
-    comp = args$comp,
-    round = current_round,
-    live = 1
-  ) |> quietly()
-  if (nrow(scores) > 0) {
-    scores <- scores |> 
-      dplyr::select(
-        date,
-        venue,
-        timestr,
-        hteam,
-        hscore,
-        hgoals,
-        hbehinds,
-        ateam,
-        ascore,
-        agoals,
-        abehinds,
-    ) |>
-      dplyr::arrange(date)
-    scores_table <- tibble::tibble(
-      team = c(scores$hteam, scores$ateam),
-      score = c(scores$hscore, scores$ascore),
-      goals = c(scores$hgoals, scores$agoals),
-      behinds = c(scores$hbehinds, scores$abehinds))
-    cat("Live scores\n")
-    cat("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
-    glue::glue("Venue: {scores$venue}, Clock: {scores$timestr}")
-    cat("---------------------------------\n")
-    print_table(scores_table)
-      
-  }
+if (args$results) {
+  # TODO: Implement
+  warning("This function hasn't been implemented yet!")
+}
 
+if (args$live) {
+  # TODO: Implement
+  warning("This function hasn't been implemented yet!")
 }
