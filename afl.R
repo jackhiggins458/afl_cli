@@ -1,4 +1,4 @@
-#!/usr/bin/env -S Rscript --vanilla
+#!/usr/bin/env -S Rscript
 
 # Environment setup ############################################################
 shhh <- base::suppressPackageStartupMessages # It's a library, so shhh!
