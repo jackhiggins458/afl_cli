@@ -8,27 +8,43 @@ A command line interface to view standings and live scores for [AFLW (Australian
 
 ## Installation (Linux/Mac)
 
-You'll need [R](https://www.r-project.org/) installed on your machine, as well as the following packages: [`fitzRoy`](https://github.com/jimmyday12/fitzRoy), [`docopt`](https://github.com/docopt/docopt.R) , [`memoise`](https://memoise.r-lib.org/), [`cachem`](https://cachem.r-lib.org/), [`glue`](https://glue.tidyverse.org/),  [`dplyr`](https://dplyr.tidyverse.org/), [`knitr`](https://github.com/yihui/knitr).
+You'll need [R](https://www.r-project.org/) installed on your machine, as well as the following packages: [`fitzRoy`](https://github.com/jimmyday12/fitzRoy), [`docopt`](https://github.com/docopt/docopt.R) , [`memoise`](https://memoise.r-lib.org/), [`cachem`](https://cachem.r-lib.org/), [`glue`](https://glue.tidyverse.org/),  [`dplyr`](https://dplyr.tidyverse.org/), [`knitr`](https://github.com/yihui/knitr).  This project uses [`renv`](https://rstudio.github.io/renv/index.html), which should make it easier to get these dependencies installed, as explained in [this section of the `renv` documentation](https://rstudio.github.io/renv/articles/renv.html#collaboration).
 
-Clone this repository.
+From the terminal, clone this repository.
 
 ```shell
 git clone https://github.com/jackhiggins458/afl_cli
 ```
 
-Make `afl.R` executable.
+Make `afl.R` and `main.sh` executable.
 
 ```shell
 cd afl_cli
-chmod +x afl.R
+chmod +x afl.R main.sh
 ```
 
-If you want to be able to run  `afl <command>` from any directory on your system, you can point a [symlink](https://en.wikipedia.org/wiki/Symbolic_link) to `afl.R` from a directory in your `$PATH`. I recommend placing the link in something like `/usr/local/bin`, but you can choose any directory in `$PATH`. 
+If you want to be able to run  `afl <command>` from any directory on your system, you can point a [symlink](https://en.wikipedia.org/wiki/Symbolic_link) to `main.sh` from a directory in your `$PATH`. I recommend placing the link in something like `/usr/local/bin`, but you can choose any directory in `$PATH`. 
 
-For example, from the `afl_cli` directory, run the following.
+For example (replacing `~/path/to/afl_cli` with the directory you cloned `afl_cli` into):
 
 ```shell
-ln -s afl.R /usr/local/bin/afl
+cd /usr/local/bin/
+ln -s afl ~/path/to/afl_cli
+```
+
+Open  `afl.R` in R. `renv` will automatically install itself (if necessary), and then `renv::restore()` can be used to install all required packages.
+
+```
+./afl.R
+...
+...
+# Bootstrapping renv 1.1.4 ---------------------------
+- Downloading renv ... OK
+- Installing renv  ... OK
+
+- Project '~/afl_cli' loaded. [renv 1.1.4]
+- None of the packages recorded in the lockfile are currently installed.
+- Use `renv::restore()` to restore the project library.
 ```
 
 
