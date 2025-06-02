@@ -39,6 +39,7 @@ cd_short <- cachem::cache_disk(
 
 # Helper functions
 # Memoise the fetch_squiggle_data functions
+ff_ms <- memoise::memoise(fitzRoy::fetch_fixture, cache = cd_short)
 ff_mm <- memoise::memoise(fitzRoy::fetch_fixture, cache = cd_medium)
 ff_ml <- memoise::memoise(fitzRoy::fetch_fixture, cache = cd_long)
 fl_ms <- memoise::memoise(fitzRoy::fetch_ladder, cache = cd_short)
@@ -61,6 +62,18 @@ fetch_current_round <- function() {
     base::as.integer()
   return(current_round)
 }
+
+format_scores <- function(df) {
+  scores <- data.frame(
+    team = c(df$home, df$away), 
+    score = c(df$home_score, df$away_score),
+    goals = c(df$home_goals, df$away_goals),
+    behinds = c(df$home_behinds, df$away_behinds),
+    row.names = c("home", "away")
+  )
+  return(scores)
+}
+
 
 print_table <- function(df, format) {
   # Print kable table line by line to remove leading blank lines
@@ -195,7 +208,7 @@ if (args$ladder) {
 
 if (args$fixture) {
   
-  results <- ff_ml(round = args$round) |>
+  fixture <- ff_ml(round = args$round) |>
     quietly() |> 
     dplyr::select(
       utcStartTime,
@@ -227,15 +240,73 @@ if (args$fixture) {
   cat("\n", 
       glue::glue("🏉 {args$comp} {args$season} Round {args$round} Fixture"), 
       "\n\n")
-  print_table(results, "fixture")
+  print_table(fixture, "fixture")
 }
 
 if (args$results) {
-  # TODO: Implement
-  warning("This function hasn't been implemented yet!")
+  results <- fitzRoy::fetch_results(
+      season = args$season,
+      round = args$round
+    ) |> 
+    dplyr::select(
+      match.date,
+      match.homeTeam.name,
+      match.awayTeam.name,
+      venue.name,
+      venue.address,
+      venue.landOwner,
+      homeTeamScore.matchScore.totalScore,
+      homeTeamScore.matchScore.goals,
+      homeTeamScore.matchScore.behinds,
+      awayTeamScore.matchScore.totalScore,
+      awayTeamScore.matchScore.goals,
+      awayTeamScore.matchScore.behinds
+    ) |> dplyr::rename(
+      when = "match.date",
+      home = "match.homeTeam.name",
+      away = "match.awayTeam.name",
+      ground = "venue.name",
+      where = "venue.address",
+      country = "venue.landOwner",
+      home_score = "homeTeamScore.matchScore.totalScore",
+      home_goals = "homeTeamScore.matchScore.goals",
+      home_behinds = "homeTeamScore.matchScore.behinds",
+      away_score = "awayTeamScore.matchScore.totalScore",
+      away_goals = "awayTeamScore.matchScore.goals",
+      away_behinds = "awayTeamScore.matchScore.behinds"
+    ) |> 
+    dplyr::mutate(
+      when = as.POSIXct(when, format = "%Y-%m-%dT%H:%M:%OS%z", tz = "UTC") |> 
+        format(format = "%a, %b %e at %H:%M", tz = "Australia/Melbourne"),
+      home = base::replace(home, home == "GWS GIANTS", "GWS Giants"),
+      home = base::replace(home, home == "Gold Coast SUNS", "Gold Coast Suns"),
+      home = team_name_emojis[home],
+      away = base::replace(away, away == "GWS GIANTS", "GWS Giants"),
+      away = base::replace(away, away == "Gold Coast SUNS", "Gold Coast Suns"),
+      away = team_name_emojis[away]
+    )
+  
+  # TODO: Make this work with more than one results entry
+  # Loop through lines one by one?
+  for (i in 1:nrow(results)) {
+    results[i,] |>
+      format_scores() |>
+      print_table("results")
+  }
+
+  
+  # TODO: Add surrounding text (when, location etc)
+  # TODO: Think about a better way to format this?
+
 }
 
+# AFL API doesn't seem to provide live scores
+# None of the other APIs support AFLW
+
 if (args$live) {
-  # TODO: Implement
-  warning("This function hasn't been implemented yet!")
+  if (args$comp == "AFLW") {
+    stop("Live scores are not available for the AFLW.")
+  }
 }
+
+
