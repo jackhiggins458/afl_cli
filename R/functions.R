@@ -105,6 +105,9 @@ print_out <- function(df, format)  {
     )
     print_table(df, "fixture")
   } else if (format == "results") {
+    if (args_$round == current_round) {
+      args_$round <- fetch_current_round("results")
+    }
     cat("\n   ",
       glue::glue(
       "🏉 {args_$comp} {args_$season} Round {args_$round} Results\n\n"
