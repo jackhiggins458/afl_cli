@@ -1,4 +1,4 @@
-library(cachem) |> shhh()
+library(cachem)
 
 # Define caches, used to minimise the number of API calls
 cd_long <- cachem::cache_disk(
