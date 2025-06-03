@@ -52,29 +52,55 @@ fetch_current_round <- function(format) {
   return(current_round)
 }
 
-format_scores <- function(df) {
-  scores <- data.frame(
-    team = c(df$home, df$away), 
-    score = c(df$home_score, df$away_score),
-    goals = c(df$home_goals, df$away_goals),
-    behinds = c(df$home_behinds, df$away_behinds),
-    row.names = c("home", "away")
-  )
-  return(scores)
+format_results <- function(df) {
+  results <- df |> 
+    dplyr::mutate(
+      result = dplyr::case_when(
+        home_score > away_score ~ "def",
+        home_score < away_score ~ "def by",
+        home_score == away_score ~ "drew",
+      ),
+      #hs =  glue::glue("{home_goals}.{home_behinds} {home_score}"),
+      to = "to"#,
+      #as =  glue::glue("{away_goals}.{away_behinds} {away_score}")
+    ) |>
+    dplyr::rename(
+      # Give shorter names for more compact table formatting
+      hg = "home_goals",
+      hb = "home_behinds",
+      hs = "home_score",
+      ag = "away_goals",
+      ab = "away_behinds",
+      as = "away_score"
+    ) |> 
+    dplyr::select(
+      home,
+      result,
+      away,
+      hg, hb, hs,
+      to,
+      ag, ab, as
+    )
+  return(results)
 }
 
 
 print_table <- function(df, format) {
   # Print kable table line by line to remove leading blank lines
-  df <- knitr::kable(df, format = "simple")
+  if(format == "results") {
+    df <- knitr::kable(df, format = "simple",
+                       align = c("l","l","l", "r", "r", "r", "r", "r", "r", "r"))
+  } else df <- knitr::kable(df, format = "simple")
   cat(strrep(" ", 3), strrep("-", max(nchar(df))), "\n")
   for(i in 1:length(df)) {
+    if(format == "results" & i < 3) next
     glue::glue("    {df[i]}") |> print()
-    if(format == "ladder" & i == 10) {
-      cat(strrep(" ", 6), strrep("~", 87),"\n")
-    }
+    if(format == "ladder" & i == 10) cat(strrep(" ", 6), strrep("~", 87),"\n")
+    
   }
   cat(strrep(" ", 3), strrep("-", max(nchar(df))), "\n\n")
+  
+  # kable(xx, format = "simple")[(1:nrow(xx))+2] |> cat(sep="\n")
 }
 
 print_out <- function(df, format)  {
@@ -97,11 +123,9 @@ print_out <- function(df, format)  {
     fixture = print_table(df, "fixture"),
     # TODO: Add surrounding text (when, location etc)
     # TODO: Think about a better way to format this?
-    results = for (i in 1:nrow(results)) {
-      results[i,] |>
-      format_scores() |>
-      print_table("results")
-    }
+    results = df |> 
+      format_results() |> 
+      print_table("results"),
   )
 }
 
