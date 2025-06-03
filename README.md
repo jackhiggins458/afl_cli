@@ -10,9 +10,10 @@ A command line interface to view standings and live scores for [AFLW (Australian
 
 You'll need [R](https://www.r-project.org/) installed on your machine, as well as the following packages: [`fitzRoy`](https://github.com/jimmyday12/fitzRoy), [`docopt`](https://github.com/docopt/docopt.R) , [`memoise`](https://memoise.r-lib.org/), [`cachem`](https://cachem.r-lib.org/), [`glue`](https://glue.tidyverse.org/),  [`dplyr`](https://dplyr.tidyverse.org/), [`knitr`](https://github.com/yihui/knitr).  This project uses [`renv`](https://rstudio.github.io/renv/index.html),  which you can use to install these dependencies, as explained in [the collaboration section of the `renv` documentation](https://rstudio.github.io/renv/articles/renv.html#collaboration).
 
-Firstly, open a terminal and clone this repository.
+Firstly, open a terminal, navigate to the directory you'd like to store this code in, and then clone this repository.
 
 ```shell
+cd ~/Documents/
 git clone https://github.com/jackhiggins458/afl_cli
 ```
 
@@ -23,14 +24,14 @@ cd afl_cli
 chmod +x afl.R main.sh
 ```
 
-If you want to be able to run  `afl <command>` from any directory in your system, you can point a [symlink](https://en.wikipedia.org/wiki/Symbolic_link) to `main.sh` from a location in your `$PATH`, such as in `/usr/local/bin`. For example (replacing `~/path/to/afl_cli` with the path to the directory you cloned `afl_cli` into):
+If you want to be able to run  `afl <command>` from any directory in your system, you can point a [symlink](https://en.wikipedia.org/wiki/Symbolic_link) to `main.sh` from a location in your `$PATH`, such as in `/usr/local/bin`. For example (replacing `~/Documents/` with the path to the directory you cloned `afl_cli` into in the first step):
 
 ```shell
 cd /usr/local/bin/
-ln -s ~/path/to/afl_cli/main.sh afl
+ln -s ~/Documents/afl_cli/main.sh afl
 ```
 
-Open  `afl.R` in R. `renv` will automatically install itself (if necessary), then use `renv::restore()` to install required packages.
+Open  `afl.R` in R. Upon opening, `renv` will bootstrap itself (install itself if it isn't already). Then, use `renv::restore()` to install required packages.
 
 ```R
 # Bootstrapping renv 1.1.4 ---------------------------
