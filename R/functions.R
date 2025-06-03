@@ -78,9 +78,10 @@ format_results <- function(df) {
 
 print_table <- function(df, format) {
   # Use to pretty print tables
-  align <- NULL
-  if(format == "results") align <- c(rep("l", 3), rep("r", 7))
-  df <- knitr::kable(df, format = "simple", align = align) 
+  if(format == "results") {
+    align <- c(rep("l", 3), rep("r", 7))
+    df <- knitr::kable(df, format = "simple", align = align)
+  } else df <- knitr::kable(df, format = "simple")
   cat(strrep(" ", 3), strrep("-", max(nchar(df))), "\n")
   # Print kable table line by line to enable modifications
   for(i in 1:length(df)) {  
