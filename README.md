@@ -8,7 +8,7 @@ A command line interface to view standings and live scores for [AFLW (Australian
 
 ## Installation (Linux/Mac)
 
-You'll need [R](https://www.r-project.org/) installed on your machine, as well as the following packages: [`fitzRoy`](https://github.com/jimmyday12/fitzRoy), [`docopt`](https://github.com/docopt/docopt.R) , [`memoise`](https://memoise.r-lib.org/), [`cachem`](https://cachem.r-lib.org/), [`glue`](https://glue.tidyverse.org/),  [`dplyr`](https://dplyr.tidyverse.org/), [`knitr`](https://github.com/yihui/knitr).  This project uses [`renv`](https://rstudio.github.io/renv/index.html),  which you can use to install these dependencies, as explained in [this section of the `renv` documentation](https://rstudio.github.io/renv/articles/renv.html#collaboration).
+You'll need [R](https://www.r-project.org/) installed on your machine, as well as the following packages: [`fitzRoy`](https://github.com/jimmyday12/fitzRoy), [`docopt`](https://github.com/docopt/docopt.R) , [`memoise`](https://memoise.r-lib.org/), [`cachem`](https://cachem.r-lib.org/), [`glue`](https://glue.tidyverse.org/),  [`dplyr`](https://dplyr.tidyverse.org/), [`knitr`](https://github.com/yihui/knitr).  This project uses [`renv`](https://rstudio.github.io/renv/index.html),  which you can use to install these dependencies, as explained in [the collaboration section of the `renv` documentation](https://rstudio.github.io/renv/articles/renv.html#collaboration).
 
 Firstly, open a terminal and clone this repository.
 
@@ -30,7 +30,7 @@ cd /usr/local/bin/
 ln -s ~/path/to/afl_cli/main.sh afl
 ```
 
-Open  `afl.R` in R. `renv` will automatically install itself (if necessary), and then `renv::restore()` can be used to install all required packages.
+Open  `afl.R` in R. `renv` will automatically install itself (if necessary), then use `renv::restore()` to install required packages.
 
 ```R
 # Bootstrapping renv 1.1.4 ---------------------------
