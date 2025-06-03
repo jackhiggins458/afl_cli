@@ -10,7 +10,7 @@ library(cachem) |> shhh()
 library(knitr) |> shhh()
 
 # Helper functions #############################################################
-# Memoise the fetch_squiggle_data functions
+# Memoise the fetch_* functions
 ff_ms <- memoise::memoise(fitzRoy::fetch_fixture, cache = cd_short)
 ff_mm <- memoise::memoise(fitzRoy::fetch_fixture, cache = cd_medium)
 ff_ml <- memoise::memoise(fitzRoy::fetch_fixture, cache = cd_long)
@@ -27,6 +27,7 @@ fsd_ml <- memoise::memoise(fitzRoy::fetch_squiggle_data, cache = cd_long)
 fetch_current_round <- function(format) {
   date_today <- base::Sys.Date()
   year_today <- base::format(date_today, "%Y")
+  
   # Look in cached fixture data, set current round equal to round of next game
   # (or, if there was a game on this day, then the round of that game)
   fixtures <- fsd_mm(query = "games", year = year_today) |> quietly() 
@@ -37,14 +38,14 @@ fetch_current_round <- function(format) {
     dplyr::first() |> 
     base::as.integer()
   
+  # Check if the round has started yet
   round_started <- base::any(
     Sys.time() >= fixtures |> 
       dplyr::filter(round == current_round) |> 
       dplyr::pull(date)
   )
-  
-  # View the results for the previous round if the current week's round
-  # hasn't yet started, 
+  # When viewing results, you usually want the last completed round, unless
+  # the current round has already started
   if (format == "results" & !round_started) {
     current_round <- current_round - 1
   }
@@ -53,6 +54,7 @@ fetch_current_round <- function(format) {
 }
 
 format_results <- function(df) {
+  # Use to process df for printing results
   results <- df |> 
     dplyr::mutate(
       result = dplyr::case_when(
@@ -60,73 +62,55 @@ format_results <- function(df) {
         home_score < away_score ~ "def by",
         home_score == away_score ~ "drew",
       ),
-      #hs =  glue::glue("{home_goals}.{home_behinds} {home_score}"),
-      to = "to"#,
-      #as =  glue::glue("{away_goals}.{away_behinds} {away_score}")
+      to = "to"
     ) |>
     dplyr::rename(
       # Give shorter names for more compact table formatting
-      hg = "home_goals",
-      hb = "home_behinds",
-      hs = "home_score",
-      ag = "away_goals",
-      ab = "away_behinds",
-      as = "away_score"
+      hg = "home_goals", hb = "home_behinds", hs = "home_score",
+      ag = "away_goals", ab = "away_behinds", as = "away_score"
     ) |> 
     dplyr::select(
-      home,
-      result,
-      away,
-      hg, hb, hs,
-      to,
-      ag, ab, as
+      home, result, away,
+      hg, hb, hs, to, ag, ab, as
     )
   return(results)
 }
 
-
 print_table <- function(df, format) {
-  # Print kable table line by line to remove leading blank lines
-  if(format == "results") {
-    df <- knitr::kable(df, format = "simple",
-                       align = c("l","l","l", "r", "r", "r", "r", "r", "r", "r"))
-  } else df <- knitr::kable(df, format = "simple")
+  # Use to pretty print tables
+  align <- NULL
+  if(format == "results") align <- c(rep("l", 3), rep("r", 7))
+  df <- knitr::kable(df, format = "simple", align = align) 
   cat(strrep(" ", 3), strrep("-", max(nchar(df))), "\n")
-  for(i in 1:length(df)) {
+  # Print kable table line by line to enable modifications
+  for(i in 1:length(df)) {  
     if(format == "results" & i < 3) next
     glue::glue("    {df[i]}") |> print()
     if(format == "ladder" & i == 10) cat(strrep(" ", 6), strrep("~", 87),"\n")
     
   }
   cat(strrep(" ", 3), strrep("-", max(nchar(df))), "\n\n")
-  
-  # kable(xx, format = "simple")[(1:nrow(xx))+2] |> cat(sep="\n")
 }
 
 print_out <- function(df, format)  {
-  base::switch(
-    format,
-    ladder = cat("\n", 
-                 glue::glue("🏉 {args_$comp} {args_$season} Ladder"), 
-                 "\n\n"),
-    fixture = cat("\n", 
-                  glue::glue("🏉 {args_$comp} {args_$season} Round {args_$round} Fixture"), 
-                  "\n\n"),
-    results = cat("\n", 
-                  glue::glue("🏉 {args_$comp} {args_$season} Round {args_$round} Results"), 
-                  "\n\n"),
-  )
-
-  base::switch(
-    format,
-    ladder = print_table(df, "ladder"),
-    fixture = print_table(df, "fixture"),
-    # TODO: Add surrounding text (when, location etc)
-    # TODO: Think about a better way to format this?
-    results = df |> 
-      format_results() |> 
-      print_table("results"),
-  )
+  if(format == "ladder") {
+    cat("\n   ", glue::glue("🏉 {args_$comp} {args_$season} Ladder\n\n"))
+    print_table(df, "ladder")
+  } else if (format == "fixture") {
+    cat("\n   ",
+      glue::glue(
+        "🏉 {args_$comp} {args_$season} Round {args_$round} Fixture\n\n"
+      ) 
+    )
+    print_table(df, "fixture")
+  } else if (format == "results") {
+    cat("\n   ",
+      glue::glue(
+      "🏉 {args_$comp} {args_$season} Round {args_$round} Results\n\n"
+      ) 
+    )
+    print_table(df, "results")
+  }
 }
 
 parse_args <- function(doc) {
@@ -172,8 +156,7 @@ get_ladder <- function() {
   
   ladder <- fetch(
     season = args_$season, 
-    comp = args_$comp,
-    user_agent = user_agent
+    comp = args_$comp
   ) |> 
     quietly() |> 
     dplyr::select(
@@ -245,7 +228,8 @@ get_results <- function() {
   }
   results <- fr_mm(
     season = args_$season,
-    round = args_$round
+    round = args_$round,
+    comp = args_$comp
   ) |> 
     dplyr::select(
       match.date,
@@ -283,7 +267,8 @@ get_results <- function() {
       away = base::replace(away, away == "GWS GIANTS", "GWS Giants"),
       away = base::replace(away, away == "Gold Coast SUNS", "Gold Coast Suns"),
       away = team_name_emojis[away]
-    )
+    ) |> 
+    format_results()
   return(results)
 }
 
