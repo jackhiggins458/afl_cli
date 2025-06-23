@@ -70,7 +70,7 @@ To view the ladder for the 2024 AFLW competition, use the `afl w ladder -s 2024`
 ```shell
 > afl w ladder -s 2024
 #
-# 🏉 AFLW 2024 Ladder 
+#    🏉 AFLW 2024 Ladder 
 #
 #    -------------------------------------------------------------------------------------------- 
 #     rank  team                    points   played   wins   losses   draws   percentage  form  
@@ -102,12 +102,12 @@ To view the fixture for this week's round in the AFL, run `afl m fixture`.
 ```shell
 > afl m fixture
 #
-# 🏉 AFLM 2025 Round 12 Fixture 
+#    🏉 AFLM 2025 Round 12 Fixture 
 #
 #    ---------------------------------------------------------------------------------------------------------------------------- 
 #    when                   home                   away                ground                 where           country            
 #    ---------------------  ---------------------  ------------------  ---------------------  --------------  -------------------
-#    Thu, May 29 at 19:30   🦁 Brisbane Lions      ✈️  Essendon         Gabba                  Brisbane        Yuggera - Toorabul 
+#    Thu, May 29 at 19:30   🦁 Brisbane Lions      ✈️ Essendon         Gabba                  Brisbane        Yuggera - Toorabul 
 #    Fri, May 30 at 19:40   🥧 Collingwood         🐣 Hawthorn         MCG                    Melbourne       Wurundjeri         
 #    Sat, May 31 at 13:20   🌞 Gold Coast Suns     🚢 Fremantle        People First Stadium   Gold Coast      Yugambeh           
 #    Sat, May 31 at 16:15   🍊 GWS Giants          🐯 Richmond         ENGIE Stadium          Sydney          Wangal             
