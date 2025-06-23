@@ -121,9 +121,6 @@ To view the fixture for this week's round in the AFL, run `afl m fixture`.
 
 ## To Do
 
-- [ ] Finish implementing  `afl (w|m) live` .
-- [ ] Finish implementing  `afl (w|m) results` .
-- [ ] Test `afl (w|m) live` .
-- [ ] Test `afl (w|m) results` .
-
+- [ ] The implementation of `afl w` isn't finished yet, and currently returns some garbage when you try to use it. Once the AFL API starts returning data for the AFLW, go back and fix this.
+- [ ] Test `afl w` outputs.
 - [ ] Add extra output options (e.g. compact tables).
